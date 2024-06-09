@@ -15,4 +15,5 @@ export const SubscriptionEnums = {
     STOP_STREAM: "stop-stream",
     MESSAGE: "message",
     DISCONNECT: "disconnect",
+    TRANSCRIBER_DISCONNECT: "transcriber-disconnect",
 };

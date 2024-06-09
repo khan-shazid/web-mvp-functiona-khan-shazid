@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import {useCallback, useEffect, useState} from "react";
 import useAudioRecorder from "./useAudioRecorder";
 import useSocket from "./useSocket";
 
@@ -9,55 +9,69 @@ import useSocket from "./useSocket";
 // NOTE: Don't use createPortal()
 
 function App() {
+  const [text, setText] = useState('');
+  const [partialText, setPartialText] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+
   const { startRecording, stopRecording, isRecording, sampleRate } = useAudioRecorder({
     dataCb: (data) => {
-      console.log('data cb --->', data);
+      console.log('data cb --->');
       sendAudio(data);
     },
   });
-  const { initialize, disconnect, startTranscriberAndRecording, sendAudio } = useSocket({startRecording});
 
-  useEffect(() => {
-    // Note: must connect to server on page load but don't start transcriber
-    initialize();
+  const { initialize, startTranscriberAndRecording, stopTranscriber, sendAudio } = useSocket({
+    startRecording,
+    stopRecording,
+    onTranscribe: useCallback((str, isFinal) => {
+        if (isFinal) {
+            setText((prev) => prev + str);
+            setPartialText('');
+        } else {
+            setPartialText(str);
+        }
+    }, [setText])
+  });
 
-    return () => {
-      // disconnect();
-    }
-  }, [initialize, disconnect]);
+
 
   const onStartRecordingPress = async () => {
     // start recorder and transcriber (send configure-stream)
     startTranscriberAndRecording(sampleRate);
-    // startRecording();
   };
 
   const onStopRecordingPress = async () => {
     stopRecording();
+    stopTranscriber();
   };
 
   const copyToClipboard = () => {
-
+    void navigator.clipboard.writeText(text);
+    setIsCopied(true);
   }
 
   const onClear  = () => {
-
+    setText('');
+    setIsCopied(false);
   }
+
+  useEffect(() => {
+    // Note: must connect to server on page load but don't start transcriber
+    initialize();
+  }, []);
 
   return (
       <div>
         <h1>Speechify Voice Notes</h1>
         <p>Record or type something in the textbox.</p>
-        <textarea id="transcription-display" rows={6} cols={50}>
-
-      </textarea>
+        <textarea id="transcription-display" rows={6} cols={50} value={text + partialText} onChange={(e) => setText(e.target.value)}/>
         <div>
           {!isRecording ?
               <button id="record-button" onClick={onStartRecordingPress}>Start Recording</button>
               :
-              <button onClick={onStopRecordingPress}>Stop Recording</button>
+              <button id="record-button" onClick={onStopRecordingPress}>Stop Recording</button>
           }
-          <button id="copy-button" onClick={copyToClipboard}>Copy</button>
+          <button id="copy-button" onClick={copyToClipboard}>{isCopied ? `Copied` : `Copy`}</button>
           <button id="reset-button" onClick={onClear}>Clear</button>
         </div>
       </div>

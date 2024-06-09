@@ -5,6 +5,7 @@ export const SubscriptionEnums = {
     PARTIAL: "partial",
     TRANSCRIBER_READY: "transcriber-ready",
     ERROR: "error",
+    TRANSCRIBER_DISCONNECTED: "transcriber-disconnected",
 };
 
 export const EmitEnums = {

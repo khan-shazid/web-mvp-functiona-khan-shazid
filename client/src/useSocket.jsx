@@ -8,7 +8,7 @@ const serverURL = "http://localhost:8080";
 
 // feel free to pass in any props
 const useSocket = (props) => {
-  const {startRecording} = props;
+  const {startRecording, onTranscribe} = props;
   const socketRef = useRef(null);
   const [loadingTranscriber, setLoadingTranscriber] = useState(false);
   // ... free to add any state or variables
@@ -17,21 +17,19 @@ const useSocket = (props) => {
 
     socketRef.current?.on(SubscriptionEnums.CONNECT, () => {
       console.log(`Connected to server (${socketRef.current?.id})`);
-        socketRef.current.emit(EmitEnums.CREATE_CHANNEL, { id: socketRef.current?.id });
     });
 
-    socketRef.current?.on(SubscriptionEnums.TRANSCRIBER_READY, (data) => {
+    socketRef.current?.on(SubscriptionEnums.TRANSCRIBER_READY, () => {
       setLoadingTranscriber(false);
-      console.log(`Transcriber is ready`, data);
       startRecording();
     });
 
     socketRef.current?.on(SubscriptionEnums.PARTIAL, (data) => {
-      console.log(`partial`, data);
+      onTranscribe(data, false);
     });
 
     socketRef.current?.on(SubscriptionEnums.FINAL, (data) => {
-      console.log(`final`, data);
+      onTranscribe(data, true);
     });
 
     socketRef.current?.on(SubscriptionEnums.ERROR, (data) => {
@@ -41,25 +39,28 @@ const useSocket = (props) => {
     socketRef.current?.on(SubscriptionEnums.DISCONNECT, () => {
       // alert("Disconnected from server. Please reload again to reconnect.");
     });
-  }, [socketRef, setLoadingTranscriber, startRecording]);
+  }, [socketRef, setLoadingTranscriber, startRecording, onTranscribe]);
 
   const disconnect = () => {
     socketRef.current?.disconnect();
   };
 
-  const startTranscriberAndRecording = useCallback((sampleRate) => {
+  const startTranscriberAndRecording = (sampleRate) => {
     setLoadingTranscriber(true);
-    socketRef.current?.emit(EmitEnums.CONFIGURE_STREAM, { sampleRate, id: socketRef.current.id });
+    socketRef.current?.emit(EmitEnums.CONFIGURE_STREAM, { sampleRate });
     console.log(`configure-stream emitted called (${socketRef.current?.id})`);
-  }, [socketRef, setLoadingTranscriber]);
+  };
+
+  const stopTranscriber = useCallback(() => {
+    socketRef.current?.emit(EmitEnums.STOP_STREAM);
+  }, [socketRef]);
 
   const sendAudio = (audioData) => {
     socketRef.current?.emit(EmitEnums.INCOMING_AUDIO, audioData);
-
   }
 
   // ... free to add more functions
-  return { initialize, disconnect, loadingTranscriber, startTranscriberAndRecording, sendAudio };
+  return { initialize, disconnect, loadingTranscriber, startTranscriberAndRecording, stopTranscriber, sendAudio };
 };
 
 export default useSocket;
