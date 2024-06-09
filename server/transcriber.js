@@ -109,7 +109,7 @@ export const setupDeepgram = (socket, sampleRate) => {
             console.log("deepgram: packet received");
             console.log("deepgram: metadata received");
             console.log("socket: metadata sent to client");
-            socket.emit("metadata", data);
+            // socket.emit("metadata", data);
         });
     });
 

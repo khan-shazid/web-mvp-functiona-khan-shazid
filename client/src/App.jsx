@@ -22,7 +22,7 @@ function App() {
     initialize();
 
     return () => {
-      disconnect();
+      // disconnect();
     }
   }, [initialize, disconnect]);
 
