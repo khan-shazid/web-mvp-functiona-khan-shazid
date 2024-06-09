@@ -15,7 +15,6 @@ function App() {
 
   const { startRecording, stopRecording, isRecording, sampleRate } = useAudioRecorder({
     dataCb: (data) => {
-      console.log('data cb --->');
       sendAudio(data);
     },
   });
