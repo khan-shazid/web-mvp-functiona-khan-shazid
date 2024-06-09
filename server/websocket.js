@@ -34,15 +34,15 @@ const initializeWebSocket = (io) => {
       socket.emit(EmitEnums.TRANSCRIBER_READY, { message: "Transcriber is ready" });
     });
 
-    socket.on(SubscriptionEnums.STOP_STREAM, (data) => {
+    socket.on(SubscriptionEnums.STOP_STREAM, () => {
       transcriber.endTranscriptionStream();
     });
 
-    socket.on(SubscriptionEnums.TRANSCRIBER_DISCONNECT, (data) => {
+    socket.on(SubscriptionEnums.TRANSCRIBER_DISCONNECT, () => {
       socket.emit();
     });
 
-    socket.on(SubscriptionEnums.DISCONNECT, (data) => {
+    socket.on(SubscriptionEnums.DISCONNECT, () => {
       console.log("socket: client disconnected");
       transcriber?.endTranscriptionStream();
     });
