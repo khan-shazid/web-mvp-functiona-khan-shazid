@@ -105,6 +105,7 @@ const useAudioRecorder = ({ dataCb }) => {
     stopRecording,
     togglePauseResume,
     isRecording,
+    sampleRate: audioContext.current.sampleRate
   };
 };
 
